@@ -1,0 +1,6 @@
+[package]
+name = "rozsda-ide"
+version = "0.0.1"
+authors = ["Varga Dániel <varga.daniel@protonmail.com>"]
+
+[dependencies]
