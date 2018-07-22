@@ -41,6 +41,11 @@ mod view {
             Inhibit(false)
         }));
 
+        let texteditor: gtk::TextView = builder.get_object("MainTextView").unwrap();
+        let textbuffer: gtk::TextBuffer = texteditor.get_buffer().unwrap();
+        
+        textbuffer.set_text("Helló világ!");
+
         window.show_all();
     }
 
