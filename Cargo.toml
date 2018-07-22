@@ -4,3 +4,13 @@ version = "0.0.1"
 authors = ["Varga Dániel <varga.daniel@protonmail.com>"]
 
 [dependencies]
+gio = "^0"
+
+[dependencies.gtk]
+version = "0.4.1"
+default-features = false
+features = ["v3_18"]
+
+[features]
+gtk_3_18 = ["gtk/v3_18"]
+embed-lgpl-docs = ["gtk/v3_18"]

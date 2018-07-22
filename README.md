@@ -10,7 +10,7 @@ Varga Dániel
 
 A **Rozsda IDE** egy integrált fejlesztői környezet (vagy másképpen *IDE*, az angol *integrated development environment* megnevezésből) a [Rust](https://www.rust-lang.org/) programozási nyelvhez.
 
-Ez a projekt ["A C++ és Rust programozási nyelv összehasonlítása"](https://github.com/varga-daniel/szakdolgozat) szakdolgozat gyakorlati része.
+Ez a projekt az ["Integrált fejlesztőkörnyezet készítése a Rust programozási nyelvhez"](https://github.com/varga-daniel/szakdolgozat) szakdolgozat gyakorlati része.
 
 ### Leírás
 
