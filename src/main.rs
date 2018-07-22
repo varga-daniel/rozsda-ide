@@ -29,6 +29,24 @@ mod view {
         );
     }
 
+    // CSAK DEBUG
+    // TODO: Egyelőre összeomlasztja a programot.
+    // Valahogy kijavítani.
+    // Lehetséges hiba: mikor hívjuk meg.
+    // Jó alternatíva lenne a GtkSourceView, de az csak GTK 3.20-ban vagy hogy van.
+    pub fn detect_world(buffer: &gtk::TextBuffer) {
+        let start = buffer.get_start_iter();
+        let end = buffer.get_end_iter();
+
+        let found = start.forward_search("világ", gtk::TextSearchFlags::all(), &end);
+
+        if found.is_some() {
+            let _found = found.unwrap();
+            buffer.apply_tag(&buffer.get_tag_table().unwrap().lookup("bold").unwrap(), &_found.0, &_found.1);
+            detect_world(buffer);
+        }
+    }
+
     pub fn build_ui(application: &gtk::Application) {
         let glade_src = include_str!("glade/main.glade");
         let builder = gtk::Builder::new_from_string(glade_src);
@@ -45,6 +63,14 @@ mod view {
         let textbuffer: gtk::TextBuffer = texteditor.get_buffer().unwrap();
         
         textbuffer.set_text("Helló világ!");
+
+        let bold_tag: gtk::TextTag = gtk::TextTag::new("bold");
+        bold_tag.set_property_weight(700);
+        textbuffer.get_tag_table().unwrap().add(&bold_tag);
+
+        textbuffer.connect_end_user_action(clone!(textbuffer => move |_| {
+            detect_world(&textbuffer);
+        }));
 
         window.show_all();
     }

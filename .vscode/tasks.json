@@ -22,6 +22,24 @@
         },
         {
             "type": "shell",
+            "label": "Lefordítás GTK 3.18-cal (beszédes)",
+            "command": "cargo",
+            "args": [
+                "build",
+                "--features",
+                "gtk_3_18",
+                "--verbose"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
             "label": "Futtatás GTK 3.18-cal",
             "command": "cargo",
             "args": [
