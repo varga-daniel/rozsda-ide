@@ -5,12 +5,12 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Lefordítás GTK 3.18-cal",
+            "label": "Lefordítás GTK 3.22-vel",
             "command": "cargo",
             "args": [
                 "build",
                 "--features",
-                "gtk_3_18"
+                "gtk_3_22"
             ],
             "problemMatcher": [
                 "$rustc"
@@ -22,12 +22,12 @@
         },
         {
             "type": "shell",
-            "label": "Lefordítás GTK 3.18-cal (beszédes)",
+            "label": "Lefordítás GTK 3.22-vel (beszédes)",
             "command": "cargo",
             "args": [
                 "build",
                 "--features",
-                "gtk_3_18",
+                "gtk_3_22",
                 "--verbose"
             ],
             "problemMatcher": [
@@ -40,12 +40,12 @@
         },
         {
             "type": "shell",
-            "label": "Futtatás GTK 3.18-cal",
+            "label": "Futtatás GTK 3.22-vel",
             "command": "cargo",
             "args": [
                 "run",
                 "--features",
-                "gtk_3_18"
+                "gtk_3_22"
             ],
             "problemMatcher": [
                 "$rustc"

@@ -1,14 +1,17 @@
 extern crate gio;
 extern crate gtk;
+extern crate sourceview;
 
 /// A view modulban lévő ablakokat látja a felhasználó.
-#[cfg(feature = "gtk_3_18")]
+#[cfg(feature = "gtk_3_22")]
 mod view {
     use gio;
     use gtk;
+    use sourceview;
 
     use gio::prelude::*;
     use gtk::prelude::*;
+    use sourceview::prelude::*;
 
     use std::env::args;
 
@@ -29,24 +32,6 @@ mod view {
         );
     }
 
-    // CSAK DEBUG
-    // TODO: Egyelőre összeomlasztja a programot.
-    // Valahogy kijavítani.
-    // Lehetséges hiba: mikor hívjuk meg.
-    // Jó alternatíva lenne a GtkSourceView, de az csak GTK 3.20-ban vagy hogy van.
-    pub fn detect_world(buffer: &gtk::TextBuffer) {
-        let start = buffer.get_start_iter();
-        let end = buffer.get_end_iter();
-
-        let found = start.forward_search("világ", gtk::TextSearchFlags::all(), &end);
-
-        if found.is_some() {
-            let _found = found.unwrap();
-            buffer.apply_tag(&buffer.get_tag_table().unwrap().lookup("bold").unwrap(), &_found.0, &_found.1);
-            detect_world(buffer);
-        }
-    }
-
     pub fn build_ui(application: &gtk::Application) {
         let glade_src = include_str!("glade/main.glade");
         let builder = gtk::Builder::new_from_string(glade_src);
@@ -59,18 +44,14 @@ mod view {
             Inhibit(false)
         }));
 
-        let texteditor: gtk::TextView = builder.get_object("MainTextView").unwrap();
-        let textbuffer: gtk::TextBuffer = texteditor.get_buffer().unwrap();
-        
-        textbuffer.set_text("Helló világ!");
+        let sourceviewer: sourceview::View = builder.get_object("SourceCodeViewer").unwrap();
 
-        let bold_tag: gtk::TextTag = gtk::TextTag::new("bold");
-        bold_tag.set_property_weight(700);
-        textbuffer.get_tag_table().unwrap().add(&bold_tag);
+        let languagemanager: sourceview::LanguageManager = sourceview::LanguageManager::new();
+        let filepath: &[&str] = &["languages/"];
+        languagemanager.set_search_path(&filepath);
 
-        textbuffer.connect_end_user_action(clone!(textbuffer => move |_| {
-            detect_world(&textbuffer);
-        }));
+        let sourcebuffer: sourceview::Buffer = sourceview::Buffer::new_with_language(
+            &languagemanager.guess_language("languages/rust.lang", None).unwrap()?);
 
         window.show_all();
     }
@@ -90,14 +71,14 @@ mod view {
     }
 }
 
-#[cfg(feature = "gtk_3_18")]
+#[cfg(feature = "gtk_3_22")]
 fn main() {
     // Meghívjuk a főablakot.
     view::main();
 }
 
-#[cfg(not(feature = "gtk_3_18"))]
+#[cfg(not(feature = "gtk_3_22"))]
 fn main() {
-    println!("Ehhez a programhoz GTK 3.18-as verzió szükségeltetik.");
-    println!("Kérem, fordítsa újra a programot a --features gtk_3_18 kapcsolóval.");
+    println!("Ehhez a programhoz GTK 3.22-es verzió szükségeltetik.");
+    println!("Kérem, fordítsa újra a programot a --features gtk_3_22 kapcsolóval.");
 }

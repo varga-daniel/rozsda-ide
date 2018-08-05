@@ -5,12 +5,13 @@ authors = ["Varga Dániel <varga.daniel@protonmail.com>"]
 
 [dependencies]
 gio = "^0"
+sourceview = "^0"
 
 [dependencies.gtk]
 version = "0.4.1"
 default-features = false
-features = ["v3_18"]
+features = ["v3_22"]
 
 [features]
-gtk_3_18 = ["gtk/v3_18"]
-embed-lgpl-docs = ["gtk/v3_18"]
+gtk_3_22 = ["gtk/v3_22"]
+embed-lgpl-docs = ["gtk/v3_22"]
