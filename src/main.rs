@@ -13,6 +13,7 @@ mod view {
     use gtk::prelude::*;
     use sourceview::prelude::*;
 
+    use std::env;
     use std::env::args;
 
     macro_rules! clone {
@@ -46,12 +47,16 @@ mod view {
 
         let sourceviewer: sourceview::View = builder.get_object("SourceCodeViewer").unwrap();
 
-        let languagemanager: sourceview::LanguageManager = sourceview::LanguageManager::new();
-        let filepath: &[&str] = &["languages/"];
-        languagemanager.set_search_path(&filepath);
-
-        let sourcebuffer: sourceview::Buffer = sourceview::Buffer::new_with_language(
-            &languagemanager.guess_language("languages/rust.lang", None).unwrap()?);
+        let languagemanager: sourceview::LanguageManager = sourceview::LanguageManager::get_default().unwrap();
+        let path = env::current_dir().unwrap().push("languages");
+        let filepath: &[&str] = &[path.extension().unwrap().to_str().unwrap()];
+        //languagemanager.set_search_path(filepath);
+        
+        println!("{:?}", filepath);
+        println!("{:?}", languagemanager.get_search_path()[0]);
+        //println!("{:?}", languagemanager.get_language_ids()[0]);
+        //let sourcebuffer: sourceview::Buffer = sourceview::Buffer::new_with_language(
+        //    &languagemanager.);
 
         window.show_all();
     }

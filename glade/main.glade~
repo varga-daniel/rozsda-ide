@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
+  <requires lib="gtksourceview" version="3.0"/>
   <object class="GtkApplicationWindow" id="MainWindow">
     <property name="width_request">500</property>
     <property name="height_request">400</property>
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Rozsda IDE</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
@@ -169,9 +174,16 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView" id="MainTextView">
+          <object class="GtkSourceView" id="SourceCodeViewer">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="left_margin">2</property>
+            <property name="right_margin">2</property>
+            <property name="monospace">True</property>
+            <property name="show_line_numbers">True</property>
+            <property name="show_line_marks">True</property>
+            <property name="auto_indent">True</property>
+            <property name="background_pattern">grid</property>
           </object>
           <packing>
             <property name="expand">True</property>
