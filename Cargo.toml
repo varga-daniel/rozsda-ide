@@ -4,14 +4,14 @@ version = "0.0.1"
 authors = ["Varga Dániel <varga.daniel@protonmail.com>"]
 
 [dependencies]
-gio = "^0"
-sourceview = "^0"
+gdk = "0.6"
+pango = "0.2.0"
+tiny-keccak = "1.4.0"
+
+[dependencies.sourceview]
+features = ["v3_18"]
+version = "0.2"
 
 [dependencies.gtk]
-version = "0.4.1"
-default-features = false
 features = ["v3_22"]
-
-[features]
-gtk_3_22 = ["gtk/v3_22"]
-embed-lgpl-docs = ["gtk/v3_22"]
+version = "0.2"
