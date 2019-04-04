@@ -1,7 +1,7 @@
 use super::{Content, Header, OpenDialog};
 use super::misc::*;
 use super::save::save;
-use gdk::CONTROL_MASK;
+use gdk::ModifierType;
 use gdk::enums::key;
 use gtk;
 use gtk::*;
@@ -42,7 +42,6 @@ impl App {
 
         window.set_titlebar(&header.container);
         window.set_title("Rozsda IDE");
-        window.set_wmclass("rozsda-ide", "Rozsda IDE");
         window.set_default_size(800, 600);
 
         window.add(&content.container);
@@ -100,7 +99,7 @@ impl App {
         	    	window.fullscreen();
         	    },
         	    // Mentés akkor ha Ctrl+S-et kapunk.
-        	    key if key == 's' as u32 && gdk.get_state().contains(CONTROL_MASK) => {
+        	    key if key == 's' as u32 && gdk.get_state().contains(ModifierType::CONTROL_MASK) => {
         	    	save(&editor, &headerbar, &save_button, &current_file, false);
         	    }
         	    // Semmi egyébként.

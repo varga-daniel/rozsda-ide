@@ -18,9 +18,9 @@ pub struct Content {
 
 impl Source {
 	pub fn new() -> Source {
-		let buff = Buffer::new(None);
+		let buff = Buffer::new(gtk::NONE_TEXT_TAG_TABLE);
 		let view = View::new_with_buffer(&buff);
-		let container = ScrolledWindow::new(None, None);
+		let container = ScrolledWindow::new(gtk::NONE_ADJUSTMENT, NONE_ADJUSTMENT);
 
 		container.add(&view);
 
@@ -52,6 +52,7 @@ impl Source {
 	    view.set_left_margin(10);
 	    view.set_show_right_margin(true);
 	    view.set_background_pattern(BackgroundPatternType::Grid);
+		view.set_input_hints(InputHints::SPELLCHECK | InputHints::WORD_COMPLETION);
 	}
 }
 

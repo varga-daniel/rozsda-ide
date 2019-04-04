@@ -1,4 +1,5 @@
 use gtk::*;
+use glib::*;
 use sourceview::*;
 use std::path::Path;
 
@@ -11,7 +12,7 @@ pub fn set_title(headerbar: &HeaderBar, path: &Path) {
 }
 
 /// Visszaadja egy szövegbuffer teljes belsejét.
-pub fn get_buffer(buffer: &Buffer) -> Option<String> {
+pub fn get_buffer(buffer: &Buffer) -> Option<GString> {
     let start = buffer.get_start_iter();
     let end = buffer.get_end_iter();
     buffer.get_text(&start, &end, true)
