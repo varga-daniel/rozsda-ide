@@ -2,7 +2,7 @@ use super::SaveDialog;
 use super::misc::*;
 use gtk::*;
 use sourceview::*;
-use state::ActiveMetadata;
+use crate::state::ActiveMetadata;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::sync::RwLock;

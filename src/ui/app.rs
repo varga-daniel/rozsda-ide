@@ -5,7 +5,7 @@ use gdk::ModifierType;
 use gdk::enums::key;
 use gtk;
 use gtk::*;
-use ::state::ActiveMetadata;
+use crate::state::ActiveMetadata;
 use std::fs::File;
 use std::io::Read;
 use std::process;
