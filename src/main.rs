@@ -1,10 +1,3 @@
-extern crate gtk;
-extern crate gdk;
-extern crate glib;
-extern crate sourceview;
-extern crate tiny_keccak;
-extern crate pango;
-
 pub mod cargo;
 pub mod state;
 pub mod ui;
