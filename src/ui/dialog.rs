@@ -10,7 +10,7 @@ pub struct SaveDialog(FileChooserDialog);
 impl OpenDialog {
     pub fn new(path: Option<PathBuf>) -> OpenDialog {
         let open_dialog = FileChooserDialog::new(
-            Some("Open"),
+            Some("Megnyitás"),
             Some(&Window::new(WindowType::Popup)),
             FileChooserAction::Open,
         );
@@ -35,7 +35,7 @@ impl OpenDialog {
 impl SaveDialog {
     pub fn new(path: Option<PathBuf>) -> SaveDialog {
         let save_dialog = FileChooserDialog::new(
-            Some("Save As"),
+            Some("Mentés Másként"),
             Some(&Window::new(WindowType::Popup)),
             FileChooserAction::Save,
         );
@@ -58,9 +58,13 @@ impl SaveDialog {
 }
 
 impl Drop for OpenDialog {
-    fn drop(&mut self) { self.0.destroy(); }
+    fn drop(&mut self) {
+        self.0.destroy();
+    }
 }
 
 impl Drop for SaveDialog {
-    fn drop(&mut self) { self.0.destroy(); }
+    fn drop(&mut self) {
+        self.0.destroy();
+    }
 }
