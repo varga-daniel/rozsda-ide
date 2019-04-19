@@ -14,7 +14,7 @@ impl ActiveMetadata {
         }
     }
 
-    pub fn get_path<'a>(&'a self) -> &'a Path {
+    pub fn get_path(&self) -> &Path {
         &self.path
     }
 
