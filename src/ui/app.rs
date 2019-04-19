@@ -72,6 +72,7 @@ impl App {
             let save = &self.header.save;
             let save_as = &self.header.save_as;
 
+            self.editor_changed(current_file.clone(), &save);
             self.open_file(current_file.clone());
             self.save_event(&save, &save, current_file.clone(), false);
             self.save_event(&save, &save_as, current_file.clone(), true);
@@ -172,6 +173,23 @@ impl App {
         let save_button = save_button.clone();
         actual_button.connect_clicked(move |_| {
             save(&editor, &headerbar, &save_button, &current_file, save_as)
+        });
+    }
+
+    /// Beállítja a mentés gombot az alapján, hogy megváltozott-e a tartalom.
+    fn editor_changed(
+        &self,
+        current_file: Arc<RwLock<Option<ActiveMetadata>>>,
+        save_button: &Button,
+    ) {
+        let save_button = save_button.clone();
+        self.content.source.buff.connect_changed(move |editor| {
+            if let Some(source_code) = get_buffer(&editor) {
+                if let Some(ref current_file) = *current_file.read().unwrap() {
+                    let has_same_sum = current_file.is_same_as(&source_code.as_bytes());
+                    save_button.set_sensitive(!has_same_sum);
+                }
+            }
         });
     }
 }
