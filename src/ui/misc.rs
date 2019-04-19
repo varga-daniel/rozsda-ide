@@ -1,5 +1,5 @@
-use gtk::*;
 use glib::*;
+use gtk::*;
 use sourceview::*;
 use std::path::Path;
 

@@ -1,21 +1,21 @@
-use super::{Content, Header, OpenDialog};
 use super::misc::*;
 use super::save::save;
-use gdk::ModifierType;
+use super::{Content, Header, OpenDialog};
+use crate::state::ActiveMetadata;
 use gdk::enums::key;
+use gdk::ModifierType;
 use gtk;
 use gtk::*;
-use crate::state::ActiveMetadata;
 use std::fs::File;
 use std::io::Read;
 use std::process;
-use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, RwLock};
 
 pub struct App {
-	pub window: Window,
-	pub header: Header,
-	pub content: Content,
+    pub window: Window,
+    pub header: Header,
+    pub content: Content,
 }
 
 /// Egy becsomagolt `App`.
@@ -32,8 +32,8 @@ impl ConnectedApp {
 impl App {
     pub fn new() -> App {
         if gtk::init().is_err() {
-        	eprintln!("A GTK inicializációja megbukott!");
-        	process::exit(1);
+            eprintln!("A GTK inicializációja megbukott!");
+            process::exit(1);
         }
 
         let window = Window::new(WindowType::Toplevel);
@@ -47,31 +47,35 @@ impl App {
         window.add(&content.container);
 
         window.connect_delete_event(move |_, _| {
-        	main_quit();
-        	Inhibit(false)
+            main_quit();
+            Inhibit(false)
         });
 
-        App { window, header, content }
+        App {
+            window,
+            header,
+            content,
+        }
     }
 
     /// Ez hozza létre a `ConnectedApp` struktúrát, amivel aztán tényleg dolgozunk.
     pub fn connect_events(self) -> ConnectedApp {
-    	// Ezt a kettőt Arc-ba csomagoljuk, hogy a szálakon keresztül is biztonságosan elérhetőek legyenek.
+        // Ezt a kettőt Arc-ba csomagoljuk, hogy a szálakon keresztül is biztonságosan elérhetőek legyenek.
 
-    	// Továbbá egy írás-olvasás zárba csomagoljuk a jelenlegi fájlt. 
+        // Továbbá egy írás-olvasás zárba csomagoljuk a jelenlegi fájlt.
         let current_file = Arc::new(RwLock::new(None));
-        
+
         // A teljes képernyősséget viszont egyszerűen csak egy bool-ként tároljuk.
         let fullscreen = Arc::new(AtomicBool::new(false));
 
         {
-        	let save = &self.header.save;
-        	let save_as = &self.header.save_as;
+            let save = &self.header.save;
+            let save_as = &self.header.save_as;
 
-        	self.open_file(current_file.clone());
-        	self.save_event(&save, &save, current_file.clone(), false);
-        	self.save_event(&save, &save_as, current_file.clone(), true);
-        	self.key_events(current_file, fullscreen);
+            self.open_file(current_file.clone());
+            self.save_event(&save, &save, current_file.clone(), false);
+            self.save_event(&save, &save_as, current_file.clone(), true);
+            self.key_events(current_file, fullscreen);
         }
 
         ConnectedApp(self)
@@ -80,32 +84,36 @@ impl App {
     /// Hozzákapcsol megadott billentyűkombinációkhoz / billentyűkhöz parancsokat a GDK
     /// által adott lehetőségekkel.
     fn key_events(
-    	&self,
-    	current_file: Arc<RwLock<Option<ActiveMetadata>>>,
-    	fullscreen: Arc<AtomicBool>,
-	) {
-		// Bár kellenek nekünk a referenciák, nem akarunk velük mit csinálni, ezért klónozunk.
+        &self,
+        current_file: Arc<RwLock<Option<ActiveMetadata>>>,
+        fullscreen: Arc<AtomicBool>,
+    ) {
+        // Bár kellenek nekünk a referenciák, nem akarunk velük mit csinálni, ezért klónozunk.
         let editor = self.content.source.buff.clone();
         let headerbar = self.header.container.clone();
         let save_button = self.header.save.clone();
 
         // Minden gomblenyomás meghívja ezt a részt.
         self.window.connect_key_press_event(move |window, gdk| {
-        	match gdk.get_keyval() {
-        	    // Teljes képernyő F11 esetén.
-        	    key::F11 => if fullscreen.fetch_xor(true, Ordering::SeqCst) {
-        	    	window.unfullscreen();
-        	    } else {
-        	    	window.fullscreen();
-        	    },
-        	    // Mentés akkor ha Ctrl+S-et kapunk.
-        	    key if key == 's' as u32 && gdk.get_state().contains(ModifierType::CONTROL_MASK) => {
-        	    	save(&editor, &headerbar, &save_button, &current_file, false);
-        	    }
-        	    // Semmi egyébként.
-        	    _ => (),
-        	}
-        	Inhibit(false)
+            match gdk.get_keyval() {
+                // Teljes képernyő F11 esetén.
+                key::F11 => {
+                    if fullscreen.fetch_xor(true, Ordering::SeqCst) {
+                        window.unfullscreen();
+                    } else {
+                        window.fullscreen();
+                    }
+                }
+                // Mentés akkor ha Ctrl+S-et kapunk.
+                key if key == 's' as u32
+                    && gdk.get_state().contains(ModifierType::CONTROL_MASK) =>
+                {
+                    save(&editor, &headerbar, &save_button, &current_file, false);
+                }
+                // Semmi egyébként.
+                _ => (),
+            }
+            Inhibit(false)
         });
     }
 
@@ -162,8 +170,8 @@ impl App {
         let editor = self.content.source.buff.clone();
         let headerbar = self.header.container.clone();
         let save_button = save_button.clone();
-        actual_button.connect_clicked(
-            move |_| save(&editor, &headerbar, &save_button, &current_file, save_as),
-        );
+        actual_button.connect_clicked(move |_| {
+            save(&editor, &headerbar, &save_button, &current_file, save_as)
+        });
     }
 }

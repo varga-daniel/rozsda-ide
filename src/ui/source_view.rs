@@ -17,52 +17,56 @@ pub struct Content {
 }
 
 impl Source {
-	pub fn new() -> Source {
-		let buff = Buffer::new(gtk::NONE_TEXT_TAG_TABLE);
-		let view = View::new_with_buffer(&buff);
-		let container = ScrolledWindow::new(gtk::NONE_ADJUSTMENT, NONE_ADJUSTMENT);
+    pub fn new() -> Source {
+        let buff = Buffer::new(gtk::NONE_TEXT_TAG_TABLE);
+        let view = View::new_with_buffer(&buff);
+        let container = ScrolledWindow::new(gtk::NONE_ADJUSTMENT, NONE_ADJUSTMENT);
 
-		container.add(&view);
+        container.add(&view);
 
-		Source::configure(&view, &buff);
+        Source::configure(&view, &buff);
 
-		Source {container, buff, view}
-	}
+        Source {
+            container,
+            buff,
+            view,
+        }
+    }
 
-	fn configure(view: &View, buff: &Buffer) {
-		WidgetExt::override_font(view, &FontDescription::from_string("monospace"));
+    fn configure(view: &View, buff: &Buffer) {
+        WidgetExt::override_font(view, &FontDescription::from_string("monospace"));
 
-		LanguageManager::new()
-			.get_language("rust")
-			.map(|rust| buff.set_language(&rust));
+        LanguageManager::new()
+            .get_language("rust")
+            .map(|rust| buff.set_language(&rust));
 
-		let stylemanager = StyleSchemeManager::new();
+        let stylemanager = StyleSchemeManager::new();
 
-		stylemanager
-			.get_scheme("Builder")
-			.or(stylemanager.get_scheme("Classic"))
-			.map(|theme| buff.set_style_scheme(&theme));
+        stylemanager
+            .get_scheme("Builder")
+            .or(stylemanager.get_scheme("Classic"))
+            .map(|theme| buff.set_style_scheme(&theme));
 
-		view.set_show_line_numbers(true);
-	    view.set_monospace(true);
-	    view.set_insert_spaces_instead_of_tabs(true);
-	    view.set_indent_width(4);
-	    view.set_smart_backspace(true);
-	    view.set_right_margin(100);
-	    view.set_left_margin(10);
-	    view.set_show_right_margin(true);
-	    view.set_background_pattern(BackgroundPatternType::Grid);
-		view.set_input_hints(InputHints::SPELLCHECK | InputHints::WORD_COMPLETION);
-	}
+        view.set_show_line_numbers(true);
+        view.set_monospace(true);
+        view.set_insert_spaces_instead_of_tabs(true);
+        view.set_indent_width(4);
+        view.set_smart_backspace(true);
+        view.set_right_margin(100);
+        view.set_left_margin(10);
+        view.set_show_right_margin(true);
+        view.set_background_pattern(BackgroundPatternType::Grid);
+        view.set_input_hints(InputHints::SPELLCHECK | InputHints::WORD_COMPLETION);
+    }
 }
 
 impl Content {
-	pub fn new() -> Content {
-		let container = Paned::new(Orientation::Horizontal);
-		let source = Source::new();
+    pub fn new() -> Content {
+        let container = Paned::new(Orientation::Horizontal);
+        let source = Source::new();
 
-		container.pack1(&source.container, true, true);
+        container.pack1(&source.container, true, true);
 
-		 Content {container, source}
-	}
+        Content { container, source }
+    }
 }

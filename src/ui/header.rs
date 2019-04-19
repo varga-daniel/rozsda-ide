@@ -22,6 +22,11 @@ impl Header {
         container.pack_end(&save_as);
         container.pack_end(&save);
 
-        Header { container, open, save, save_as }
+        Header {
+            container,
+            open,
+            save,
+            save_as,
+        }
     }
 }
