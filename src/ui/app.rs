@@ -68,16 +68,14 @@ impl App {
         // A teljes képernyősséget viszont egyszerűen csak egy bool-ként tároljuk.
         let fullscreen = Arc::new(AtomicBool::new(false));
 
-        {
-            let save = &self.header.save;
-            let save_as = &self.header.save_as;
+        let save = &self.header.save;
+        let save_as = &self.header.save_as;
 
-            self.editor_changed(current_file.clone(), &save);
-            self.open_file(current_file.clone());
-            self.save_event(&save, &save, current_file.clone(), false);
-            self.save_event(&save, &save_as, current_file.clone(), true);
-            self.key_events(current_file, fullscreen);
-        }
+        self.editor_changed(current_file.clone(), &save);
+        self.open_file(current_file.clone());
+        self.save_event(&save, &save, current_file.clone(), false);
+        self.save_event(&save, &save_as, current_file.clone(), true);
+        self.key_events(current_file, fullscreen);
 
         ConnectedApp(self)
     }
