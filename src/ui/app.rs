@@ -2,6 +2,7 @@ use super::misc::*;
 use super::save::save;
 use super::{Content, Header};
 use crate::state::ActiveMetadata;
+use crate::cargo::*;
 use gdk::enums::key;
 use gdk::ModifierType;
 use gtk;

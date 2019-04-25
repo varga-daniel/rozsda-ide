@@ -18,6 +18,12 @@ impl OpenDialog {
         open_dialog.add_button("Mégse", ResponseType::Cancel.into());
         open_dialog.add_button("Megnyit", ResponseType::Ok.into());
 
+        let filter = FileFilter::new();
+        filter.add_pattern("*.rs");
+        filter.set_name("Rust forrásfájlok");
+
+        open_dialog.add_filter(&filter);
+
         path.map(|p| open_dialog.set_current_folder(p));
 
         OpenDialog(open_dialog)
@@ -42,6 +48,12 @@ impl SaveDialog {
 
         save_dialog.add_button("Mégse", ResponseType::Cancel.into());
         save_dialog.add_button("Mentés", ResponseType::Ok.into());
+
+        let filter = FileFilter::new();
+        filter.add_pattern("*.rs");
+        filter.set_name("Rust forrásfájlok");
+
+        save_dialog.add_filter(&filter);
 
         path.map(|p| save_dialog.set_current_folder(p));
 

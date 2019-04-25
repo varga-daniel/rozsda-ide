@@ -22,7 +22,7 @@ impl FileMenu {
         let new_file_item = MenuItem::new_with_label("Új");
         let open_item = MenuItem::new_with_label("Megnyitás");
         let save_item = MenuItem::new_with_label("Mentés");
-        let save_as_item = MenuItem::new_with_label("Mentés Másként");
+        let save_as_item = MenuItem::new_with_label("Mentés másként");
         let close_file_item = MenuItem::new_with_label("Bezárás");
         let quit_item = MenuItem::new_with_label("Kilépés");
 
