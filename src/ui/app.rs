@@ -93,8 +93,8 @@ impl App {
         let save_button = self.header.save.clone();
 
         // Minden gomblenyomás meghívja ezt a részt.
-        self.window.connect_key_press_event(move |window, gdk| {
-            match gdk.get_keyval() {
+        self.window.connect_key_press_event(move |window, eventkey| {
+            match eventkey.get_keyval() {
                 // Teljes képernyő F11 esetén.
                 key::F11 => {
                     if fullscreen.fetch_xor(true, Ordering::SeqCst) {
@@ -105,7 +105,7 @@ impl App {
                 }
                 // Mentés akkor ha Ctrl+S-et kapunk.
                 key if key == 's' as u32
-                    && gdk.get_state().contains(ModifierType::CONTROL_MASK) =>
+                    && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
                 {
                     save(&editor, &headerbar, &save_button, &current_file, false);
                 }
