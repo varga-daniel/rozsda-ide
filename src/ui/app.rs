@@ -1,13 +1,11 @@
 use super::misc::*;
 use super::save::save;
-use super::{Content, Header, OpenDialog};
+use super::{Content, Header};
 use crate::state::ActiveMetadata;
 use gdk::enums::key;
 use gdk::ModifierType;
 use gtk;
 use gtk::*;
-use std::fs::File;
-use std::io::Read;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
@@ -68,13 +66,18 @@ impl App {
         // A teljes képernyősséget viszont egyszerűen csak egy bool-ként tároljuk.
         let fullscreen = Arc::new(AtomicBool::new(false));
 
-        let save = &self.header.save;
-        let save_as = &self.header.save_as;
+        let save = &self.header.file_menu.save_item;
+        let save_as = &self.header.file_menu.save_as_item;
+        let close = &self.header.file_menu.close_file_item;
+        let quit = &self.header.file_menu.quit_item;
 
         self.editor_changed(current_file.clone(), &save);
-        self.open_file(current_file.clone());
+        self.open_event(current_file.clone());
         self.save_event(&save, &save, current_file.clone(), false);
         self.save_event(&save, &save_as, current_file.clone(), true);
+        self.close_file_event(&save, &close, current_file.clone());
+        self.close_file_event(&save, &quit, current_file.clone());
+        self.quit_event(&quit);
         self.key_events(current_file, fullscreen);
 
         ConnectedApp(self)
@@ -90,87 +93,96 @@ impl App {
         // Bár kellenek nekünk a referenciák, nem akarunk velük mit csinálni, ezért klónozunk.
         let editor = self.content.source.buff.clone();
         let headerbar = self.header.container.clone();
-        let save_button = self.header.save.clone();
+        let save_item = self.header.file_menu.save_item.clone();
 
         // Minden gomblenyomás meghívja ezt a részt.
-        self.window.connect_key_press_event(move |window, eventkey| {
-            match eventkey.get_keyval() {
-                // Teljes képernyő F11 esetén.
-                key::F11 => {
-                    if fullscreen.fetch_xor(true, Ordering::SeqCst) {
-                        window.unfullscreen();
-                    } else {
-                        window.fullscreen();
+        self.window
+            .connect_key_press_event(move |window, eventkey| {
+                match eventkey.get_keyval() {
+                    // Teljes képernyő F11 esetén.
+                    key::F11 => {
+                        if fullscreen.fetch_xor(true, Ordering::SeqCst) {
+                            window.unfullscreen();
+                        } else {
+                            window.fullscreen();
+                        }
                     }
+                    // Mentés akkor ha Ctrl+S-et kapunk.
+                    key if key == 's' as u32
+                        && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
+                    {
+                        save(&editor, &headerbar, &save_item, &current_file, false);
+                    }
+                    // Megnyitás a Ctrl+O-val.
+                    key if key == 'o' as u32
+                        && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
+                    {
+                        open_file(&editor, &headerbar, &current_file);
+                    }
+                    // Fájl bezárása Ctrl+W-val.
+                    key if key == 'w' as u32
+                        && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
+                    {
+                        close_file(&window, &editor, &headerbar, &save_item, &current_file);
+                    }
+                    // Kilépés Ctrl+Q-val.
+                    key if key == 'q' as u32
+                        && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
+                    {
+                        close_file(&window, &editor, &headerbar, &save_item, &current_file);
+                        main_quit();
+                    }
+                    // Semmi egyébként.
+                    _ => (),
                 }
-                // Mentés akkor ha Ctrl+S-et kapunk.
-                key if key == 's' as u32
-                    && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
-                {
-                    save(&editor, &headerbar, &save_button, &current_file, false);
-                }
-                // Semmi egyébként.
-                _ => (),
-            }
-            Inhibit(false)
-        });
+                Inhibit(false)
+            });
     }
 
     /// A Megnyitás gomb beállítása fájlok megnyitására.
-    fn open_file(&self, current_file: Arc<RwLock<Option<ActiveMetadata>>>) {
+    fn open_event(&self, current_file: Arc<RwLock<Option<ActiveMetadata>>>) {
         let editor = self.content.source.buff.clone();
         let headerbar = self.header.container.clone();
-        self.header.open.connect_clicked(move |_| {
-            // Ha létezik, használjuk fel a jelenlegi fájl szülő könyvtárát az OpenDialog
-            // kiindulópontjaként.
-            let open_dialog = OpenDialog::new({
-                let lock = current_file.read().unwrap();
-                if let Some(ref path) = *lock {
-                    path.get_dir()
-                } else {
-                    None
-                }
-            });
-
-            // Majd futtassuk az OpenDialog-ot, és ha kiválasztott a
-            // felhasználó egy fájlt, nyissuk meg.
-            if let Some(new_file) = open_dialog.run() {
-                if let Ok(mut file) = File::open(&new_file) {
-                    // Ha sikeres volt a fájl megnyitása, olvassuk be a tartalmát a bufferbe.
-                    let mut contents = String::new();
-                    let _ = file.read_to_string(&mut contents);
-
-                    // Frissítsük a címet, mivel új fájlt töltöttünk be.
-                    set_title(&headerbar, &new_file);
-                    if let Some(parent) = new_file.parent() {
-                        let subtitle: &str = &parent.to_string_lossy();
-                        headerbar.set_subtitle(subtitle);
-                    }
-
-                    // Frissítsük a jelenlegi fájl változóját.
-                    *current_file.write().unwrap() =
-                        Some(ActiveMetadata::new(new_file, &contents.as_bytes()));
-
-                    // Végül ne felejtsük el betenni a tartalmat az editorba!
-                    editor.set_text(&contents);
-                }
-            }
+        self.header.file_menu.open_item.connect_activate(move |_| {
+            open_file(&editor, &headerbar, &current_file);
         });
     }
 
     /// A save funkció összekötése a megadott gombbal.
     fn save_event(
         &self,
-        save_button: &Button,
-        actual_button: &Button,
+        save_item: &MenuItem,
+        actual_item: &MenuItem,
         current_file: Arc<RwLock<Option<ActiveMetadata>>>,
         save_as: bool,
     ) {
         let editor = self.content.source.buff.clone();
         let headerbar = self.header.container.clone();
-        let save_button = save_button.clone();
-        actual_button.connect_clicked(move |_| {
-            save(&editor, &headerbar, &save_button, &current_file, save_as)
+        let save_item = save_item.clone();
+        actual_item.connect_activate(move |_| {
+            save(&editor, &headerbar, &save_item, &current_file, save_as)
+        });
+    }
+
+    fn close_file_event(
+        &self,
+        save_item: &MenuItem,
+        actual_item: &MenuItem,
+        current_file: Arc<RwLock<Option<ActiveMetadata>>>,
+    ) {
+        let window = self.window.clone();
+        let editor = self.content.source.buff.clone();
+        let headerbar = self.header.container.clone();
+        let save_item = save_item.clone();
+
+        actual_item.connect_activate(move |_| {
+            close_file(&window, &editor, &headerbar, &save_item, &current_file)
+        });
+    }
+
+    fn quit_event(&self, quit_item: &MenuItem) {
+        quit_item.connect_activate(move |_| {
+            main_quit();
         });
     }
 
@@ -178,14 +190,14 @@ impl App {
     fn editor_changed(
         &self,
         current_file: Arc<RwLock<Option<ActiveMetadata>>>,
-        save_button: &Button,
+        save_item: &MenuItem,
     ) {
-        let save_button = save_button.clone();
+        let save_item = save_item.clone();
         self.content.source.buff.connect_changed(move |editor| {
             if let Some(source_code) = get_buffer(&editor) {
                 if let Some(ref current_file) = *current_file.read().unwrap() {
                     let has_same_sum = current_file.is_same_as(&source_code.as_bytes());
-                    save_button.set_sensitive(!has_same_sum);
+                    save_item.set_sensitive(!has_same_sum);
                 }
             }
         });

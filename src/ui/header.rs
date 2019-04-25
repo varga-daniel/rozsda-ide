@@ -1,10 +1,11 @@
+pub mod file_menu;
+
+use file_menu::*;
 use gtk::*;
 
 pub struct Header {
     pub container: HeaderBar,
-    pub open: Button,
-    pub save: Button,
-    pub save_as: Button,
+    pub file_menu: FileMenu,
 }
 
 impl Header {
@@ -14,19 +15,13 @@ impl Header {
         container.set_title("Rozsda IDE");
         container.set_show_close_button(true);
 
-        let open = Button::new_with_mnemonic("Megnyitás");
-        let save = Button::new_with_mnemonic("Mentés");
-        let save_as = Button::new_with_mnemonic("Mentés Másként");
+        let file_menu = FileMenu::new();
 
-        container.pack_start(&open);
-        container.pack_end(&save_as);
-        container.pack_end(&save);
+        container.pack_start(&file_menu.file_menu_bar);
 
         Header {
             container,
-            open,
-            save,
-            save_as,
+            file_menu,
         }
     }
 }
