@@ -8,6 +8,7 @@ pub struct OpenDialog(FileChooserDialog);
 pub struct SaveDialog(FileChooserDialog);
 
 pub struct OpenFolderDialog(FileChooserDialog);
+pub struct CreateFolderDialog(FileChooserDialog);
 
 impl OpenDialog {
     pub fn new(path: Option<PathBuf>) -> OpenDialog {
@@ -80,11 +81,36 @@ impl OpenFolderDialog {
         );
 
         open_dialog.add_button("Mégse", ResponseType::Cancel.into());
-        open_dialog.add_button("Kiválaszt", ResponseType::Ok.into());
+        open_dialog.add_button("Kijelölés", ResponseType::Ok.into());
 
         path.map(|p| open_dialog.set_current_folder(p));
 
         OpenFolderDialog(open_dialog)
+    }
+
+    pub fn run(&self) -> Option<PathBuf> {
+        if self.0.run() == ResponseType::Ok.into() {
+            self.0.get_filename()
+        } else {
+            None
+        }
+    }
+}
+
+impl CreateFolderDialog {
+    pub fn new(path: Option<PathBuf>) -> CreateFolderDialog {
+        let open_dialog = FileChooserDialog::new(
+            Some("Készítsen könyvtárat"),
+            Some(&Window::new(WindowType::Popup)),
+            FileChooserAction::CreateFolder,
+        );
+
+        open_dialog.add_button("Mégse", ResponseType::Cancel.into());
+        open_dialog.add_button("Kijelölés", ResponseType::Ok.into());
+
+        path.map(|p| open_dialog.set_current_folder(p));
+
+        CreateFolderDialog(open_dialog)
     }
 
     pub fn run(&self) -> Option<PathBuf> {
@@ -109,6 +135,12 @@ impl Drop for SaveDialog {
 }
 
 impl Drop for OpenFolderDialog {
+    fn drop(&mut self) {
+        self.0.destroy();
+    }
+}
+
+impl Drop for CreateFolderDialog {
     fn drop(&mut self) {
         self.0.destroy();
     }

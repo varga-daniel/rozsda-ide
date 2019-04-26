@@ -26,11 +26,15 @@ impl Header {
         container.set_title("Rozsda IDE");
         container.set_show_close_button(true);
 
+        let menubar = MenuBar::new();
+
         let file_menu = FileMenu::new();
         let cargo_menu = CargoMenu::new();
 
-        container.pack_start(&file_menu.file_menu_bar);
-        container.pack_start(&cargo_menu.cargo_menu_bar);
+        menubar.append(&file_menu.file_menu_item);
+        menubar.append(&cargo_menu.cargo_menu_item);
+
+        container.pack_start(&menubar);
 
         Header {
             container,
@@ -57,7 +61,9 @@ impl Header {
 
         if let Some(ref current_project) = *self.current_project.read().unwrap() {
             final_title.push_str(" - ");
-            final_title.push_str(&current_project.get_path().to_string_lossy());
+            if let Ok(result) = current_project.get_name().unwrap().into_string() {
+                final_title.push_str(result.as_str());
+            }
         }
 
         self.container.set_title(final_title.as_str());

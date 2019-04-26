@@ -1,33 +1,51 @@
+use std::path::Path;
 use std::process;
 
-pub fn create_new_binary(location: &str, name: &str) -> process::Output {
-    process::Command::new("cargo")
-        .current_dir(location)
-        .args(&["new", "--bin", name])
-        .output()
-        .expect("Failed to create a new binary using cargo.")
+pub fn init_new_binary(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["init", "--bin"])
+                .output()
 }
 
-pub fn create_new_library(location: &str, name: &str) -> process::Output {
-    process::Command::new("cargo")
-        .current_dir(location)
-        .args(&["new", "--lib", name])
-        .output()
-        .expect("Failed to create a new library using cargo.")
+pub fn init_new_library(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["init", "--lib"])
+                .output()
 }
 
-pub fn init_new_binary(location: &str) -> process::Output {
-    process::Command::new("cargo")
-        .current_dir(location)
-        .args(&["init", "--bin"])
-        .output()
-        .expect("Failed to init a new binary using cargo.")
+pub fn build_cargo_project(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["build", "--message-format", "short"])
+                .output()
 }
 
-pub fn init_new_library(location: &str) -> process::Output {
-    process::Command::new("cargo")
-        .current_dir(location)
-        .args(&["init", "--lib"])
-        .output()
-        .expect("Failed to init a new library using cargo.")
+pub fn run_cargo_project(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["run", "--message-format", "short"])
+                .output()
+}
+
+pub fn check_cargo_project(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["check", "--message-format", "short"])
+                .output()
+}
+
+pub fn clean_cargo_project(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["clean"])
+                .output()
+}
+
+pub fn test_cargo_project(location: &Path) -> std::io::Result<process::Output> {
+        process::Command::new("cargo")
+                .current_dir(location)
+                .args(&["test", "--message-format", "short"])
+                .output()
 }

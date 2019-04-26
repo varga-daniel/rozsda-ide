@@ -1,6 +1,6 @@
 use super::dialog::*;
-use super::header::*;
 use super::save::*;
+use crate::cargo::*;
 use crate::state::*;
 use glib::GString;
 use gtk::*;
@@ -36,12 +36,6 @@ pub fn open_file(editor: &Buffer, current_file: &RwLock<Option<ActiveMetadata>>)
             // Ha sikeres volt a fájl megnyitása, olvassuk be a tartalmát a bufferbe.
             let mut contents = std::string::String::new();
             let _ = file.read_to_string(&mut contents);
-
-            // Frissítsük a címet, mivel új fájlt töltöttünk be.
-            let mut subtitle = String::new();
-            if let Some(parent) = new_file.parent() {
-                subtitle = String::from(parent.to_str().unwrap());
-            }
 
             // Frissítsük a jelenlegi fájl változóját.
             *current_file.write().unwrap() =
@@ -101,12 +95,122 @@ pub fn ask_about_unsaved_changes(parent: &Window) -> i32 {
     result
 }
 
-pub fn open_project(current_project: &RwLock<Option<ProjectMetadata>>) {
-    let open_dialog = OpenFolderDialog::new(None);
+pub fn open_project(parent: &Window, current_project: &RwLock<Option<ProjectMetadata>>) {
+    let open_folder_dialog = OpenFolderDialog::new(None);
 
-    if let Some(new_project) = open_dialog.run() {
+    if let Some(new_project) = open_folder_dialog.run() {
         if new_project.is_dir() {
-            *current_project.write().unwrap() = Some(ProjectMetadata::new(new_project));
+            let mut cargotoml = new_project.clone();
+            cargotoml.push("Cargo.toml");
+            if cargotoml.exists() {
+                *current_project.write().unwrap() = Some(ProjectMetadata::new(new_project));
+            } else {
+                let dialog = MessageDialog::new(
+                    Some(parent),
+                    DialogFlags::MODAL,
+                    MessageType::Error,
+                    ButtonsType::Ok,
+                    "A kiválasztott könyvtár nem láda!",
+                );
+
+                dialog.set_title("Hiba a ládabetöltéskor!");
+
+                dialog.run();
+                dialog.close();
+            };
         }
+    }
+}
+
+pub fn create_project(
+    parent: &Window,
+    current_project: &RwLock<Option<ProjectMetadata>>,
+    is_binary: bool,
+) {
+    let create_folder_dialog = CreateFolderDialog::new(None);
+
+    if let Some(new_project) = create_folder_dialog.run() {
+        if new_project.is_dir() {
+            let mut result: std::io::Result<std::process::Output>;
+
+            if is_binary {
+                result = init_new_binary(&new_project);
+            } else {
+                result = init_new_library(&new_project);
+            }
+
+            if result.is_ok() {
+                *current_project.write().unwrap() = Some(ProjectMetadata::new(new_project));
+            } else {
+                let dialog = MessageDialog::new(
+                    Some(parent),
+                    DialogFlags::MODAL,
+                    MessageType::Error,
+                    ButtonsType::Ok,
+                    &format!(
+                        "A láda készítése megbukott!\nA Cargo a következővel tért vissza:\n\n{:?}",
+                        result
+                    ),
+                );
+
+                dialog.set_title("Hiba a láda készítésekor!");
+
+                dialog.run();
+                dialog.close();
+            }
+        }
+    }
+}
+
+pub enum CargoAction {
+    Build,
+    Run,
+    Check,
+    Clean,
+    Test,
+}
+
+pub fn perform_cargo_action(
+    parent: &Window,
+    current_project: &RwLock<Option<ProjectMetadata>>,
+    action: CargoAction,
+) {
+    if let Some(ref current_project) = *current_project.read().unwrap() {
+        let mut result: std::io::Result<std::process::Output>;
+        match action {
+            CargoAction::Build => result = build_cargo_project(current_project.get_path()),
+            CargoAction::Run => result = run_cargo_project(current_project.get_path()),
+            CargoAction::Check => result = check_cargo_project(current_project.get_path()),
+            CargoAction::Clean => result = clean_cargo_project(current_project.get_path()),
+            CargoAction::Test => result = test_cargo_project(current_project.get_path()),
+        }
+        let dialog = MessageDialog::new(
+            Some(parent),
+            DialogFlags::MODAL,
+            MessageType::Info,
+            ButtonsType::Ok,
+            &format!(
+                "A Cargo parancs a következővel tért vissza:\n\n{:?}",
+                result
+            ),
+        );
+
+        dialog.set_title("Cargo parancs lefutott");
+
+        dialog.run();
+        dialog.close();
+    } else {
+        let dialog = MessageDialog::new(
+            Some(parent),
+            DialogFlags::MODAL,
+            MessageType::Error,
+            ButtonsType::Ok,
+            "Nem nyitott meg még ládát!",
+        );
+
+        dialog.set_title("Hiba a Cargo parancs futtatásakor!");
+
+        dialog.run();
+        dialog.close();
     }
 }

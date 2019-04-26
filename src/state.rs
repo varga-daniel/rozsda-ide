@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use tiny_keccak::keccak512;
 
@@ -42,5 +43,9 @@ impl ProjectMetadata {
 
     pub fn get_path(&self) -> &Path {
         &self.path
+    }
+
+    pub fn get_name(&self) -> Option<OsString> {
+        self.path.file_name().map(|p| p.to_os_string())
     }
 }

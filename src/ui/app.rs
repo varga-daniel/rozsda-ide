@@ -70,7 +70,6 @@ impl App {
         // A teljes képernyősséget viszont egyszerűen csak egy bool-ként tároljuk.
         let fullscreen = Arc::new(AtomicBool::new(false));
 
-        let header = &self.header.container;
         let save = &self.header.file_menu.save_item;
         let save_as = &self.header.file_menu.save_as_item;
         let close = &self.header.file_menu.close_file_item;
@@ -82,7 +81,19 @@ impl App {
         self.save_event(&save, &save_as, true);
         self.close_file_event(&save, &close);
         self.close_file_event(&save, &quit);
+
+        self.open_project_event();
+        self.close_project_event();
+        self.create_project_event();
+
+        self.cargo_build_event();
+        self.cargo_check_event();
+        self.cargo_clean_event();
+        self.cargo_run_event();
+        self.cargo_test_event();
+
         self.quit_event(&quit);
+
         self.key_events(fullscreen);
 
         ConnectedApp(self)
@@ -186,6 +197,110 @@ impl App {
     fn quit_event(&self, quit_item: &MenuItem) {
         quit_item.connect_activate(move |_| {
             main_quit();
+        });
+    }
+
+    fn open_project_event(&self) {
+        let window = self.window.clone();
+        let header = self.header.clone();
+        let current_project = self.current_project.clone();
+
+        self.header.cargo_menu.open_item.connect_activate(move |_| {
+            open_project(&window, &current_project);
+            header.update_titles(true);
+        });
+    }
+
+    fn close_project_event(&self) {
+        let current_project = self.current_project.clone();
+        let header = self.header.clone();
+
+        self.header
+            .cargo_menu
+            .close_item
+            .connect_activate(move |_| {
+                *current_project.write().unwrap() = None;
+                header.update_titles(true);
+            });
+    }
+
+    fn create_project_event(&self) {
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+        let header = self.header.clone();
+
+        self.header
+            .cargo_menu
+            .new_lib_item
+            .connect_activate(move |_| {
+                create_project(&window, &current_project, false);
+                header.update_titles(true);
+            });
+
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+        let header = self.header.clone();
+
+        self.header
+            .cargo_menu
+            .new_bin_item
+            .connect_activate(move |_| {
+                create_project(&window, &current_project, true);
+                header.update_titles(true);
+            });
+    }
+
+    fn cargo_build_event(&self) {
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+
+        self.header
+            .cargo_menu
+            .build_item
+            .connect_activate(move |_| {
+                perform_cargo_action(&window, &current_project, CargoAction::Build);
+            });
+    }
+
+    fn cargo_check_event(&self) {
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+
+        self.header
+            .cargo_menu
+            .check_item
+            .connect_activate(move |_| {
+                perform_cargo_action(&window, &current_project, CargoAction::Check);
+            });
+    }
+
+    fn cargo_test_event(&self) {
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+
+        self.header.cargo_menu.test_item.connect_activate(move |_| {
+            perform_cargo_action(&window, &current_project, CargoAction::Test);
+        });
+    }
+
+    fn cargo_clean_event(&self) {
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+
+        self.header
+            .cargo_menu
+            .clean_item
+            .connect_activate(move |_| {
+                perform_cargo_action(&window, &current_project, CargoAction::Clean);
+            });
+    }
+
+    fn cargo_run_event(&self) {
+        let window = self.window.clone();
+        let current_project = self.current_project.clone();
+
+        self.header.cargo_menu.run_item.connect_activate(move |_| {
+            perform_cargo_action(&window, &current_project, CargoAction::Run);
         });
     }
 

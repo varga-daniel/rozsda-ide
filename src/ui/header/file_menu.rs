@@ -1,7 +1,7 @@
 use gtk::*;
 
 pub struct FileMenu {
-    pub file_menu_bar: MenuBar,
+    pub file_menu_item: MenuItem,
     pub file_menu: Menu,
     pub new_file_item: MenuItem,
     pub open_item: MenuItem,
@@ -13,8 +13,6 @@ pub struct FileMenu {
 
 impl FileMenu {
     pub fn new() -> FileMenu {
-        let file_menu_bar = MenuBar::new();
-
         let file_menu = Menu::new();
         let file_menu_item = MenuItem::new_with_label("Fájl");
         file_menu_item.set_submenu(&file_menu);
@@ -35,10 +33,8 @@ impl FileMenu {
         file_menu.append(&SeparatorMenuItem::new());
         file_menu.append(&quit_item);
 
-        file_menu_bar.append(&file_menu_item);
-
         FileMenu {
-            file_menu_bar,
+            file_menu_item,
             file_menu,
             new_file_item,
             open_item,
