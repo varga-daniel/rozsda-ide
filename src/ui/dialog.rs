@@ -7,6 +7,8 @@ pub struct OpenDialog(FileChooserDialog);
 /// Egy becsomagolt GTKs FileChooserDialog, ami automatikusan a mentésre állítja magát, és elpusztítja magát, amint droppolják.
 pub struct SaveDialog(FileChooserDialog);
 
+pub struct OpenFolderDialog(FileChooserDialog);
+
 impl OpenDialog {
     pub fn new(path: Option<PathBuf>) -> OpenDialog {
         let open_dialog = FileChooserDialog::new(
@@ -69,6 +71,31 @@ impl SaveDialog {
     }
 }
 
+impl OpenFolderDialog {
+    pub fn new(path: Option<PathBuf>) -> OpenFolderDialog {
+        let open_dialog = FileChooserDialog::new(
+            Some("Válasszon könyvtárat"),
+            Some(&Window::new(WindowType::Popup)),
+            FileChooserAction::SelectFolder,
+        );
+
+        open_dialog.add_button("Mégse", ResponseType::Cancel.into());
+        open_dialog.add_button("Kiválaszt", ResponseType::Ok.into());
+
+        path.map(|p| open_dialog.set_current_folder(p));
+
+        OpenFolderDialog(open_dialog)
+    }
+
+    pub fn run(&self) -> Option<PathBuf> {
+        if self.0.run() == ResponseType::Ok.into() {
+            self.0.get_filename()
+        } else {
+            None
+        }
+    }
+}
+
 impl Drop for OpenDialog {
     fn drop(&mut self) {
         self.0.destroy();
@@ -76,6 +103,12 @@ impl Drop for OpenDialog {
 }
 
 impl Drop for SaveDialog {
+    fn drop(&mut self) {
+        self.0.destroy();
+    }
+}
+
+impl Drop for OpenFolderDialog {
     fn drop(&mut self) {
         self.0.destroy();
     }

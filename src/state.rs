@@ -6,6 +6,10 @@ pub struct ActiveMetadata {
     sum: [u8; 64],
 }
 
+pub struct ProjectMetadata {
+    path: PathBuf,
+}
+
 impl ActiveMetadata {
     pub fn new(path: PathBuf, data: &[u8]) -> ActiveMetadata {
         ActiveMetadata {
@@ -28,5 +32,15 @@ impl ActiveMetadata {
 
     pub fn set_sum(&mut self, data: &[u8]) {
         self.sum = keccak512(data);
+    }
+}
+
+impl ProjectMetadata {
+    pub fn new(path: PathBuf) -> ProjectMetadata {
+        ProjectMetadata { path }
+    }
+
+    pub fn get_path(&self) -> &Path {
+        &self.path
     }
 }

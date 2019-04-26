@@ -15,7 +15,6 @@ pub enum SaveAction {
 
 pub fn save(
     editor: &Buffer,
-    headerbar: &HeaderBar,
     save: &MenuItem,
     current_file: &RwLock<Option<ActiveMetadata>>,
     save_as: bool,
@@ -33,12 +32,6 @@ pub fn save(
         // Nagyon cselekedni csak akkor kell, ha Ok(Some(ActiveMetadata))-t kaptunk vissza.
         match result {
             Ok(SaveAction::New(file)) => {
-                set_title(&headerbar, file.get_path(), false);
-                if let Some(parent) = file.get_dir() {
-                    let subtitle: &str = &parent.to_string_lossy();
-                    headerbar.set_subtitle(subtitle);
-                };
-
                 let mut current_file = current_file.write().unwrap();
                 *current_file = Some(file);
                 save.set_sensitive(false);

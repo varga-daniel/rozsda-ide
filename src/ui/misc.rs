@@ -1,26 +1,14 @@
 use super::dialog::*;
+use super::header::*;
 use super::save::*;
-use crate::state::ActiveMetadata;
-use glib::*;
+use crate::state::*;
+use glib::GString;
 use gtk::*;
 use sourceview::*;
 
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
 use std::sync::RwLock;
-
-/// Beállítja a header címét a fájlnévre.
-pub fn set_title(headerbar: &HeaderBar, path: &Path, modified: bool) {
-    if let Some(filename) = path.file_name() {
-        let mut filename = std::string::String::from(filename.to_str().unwrap());
-        if modified {
-            filename.push_str("*");
-        }
-
-        headerbar.set_title(filename.as_str());
-    }
-}
 
 /// Visszaadja egy szövegbuffer teljes belsejét.
 pub fn get_buffer(buffer: &Buffer) -> Option<GString> {
@@ -29,11 +17,7 @@ pub fn get_buffer(buffer: &Buffer) -> Option<GString> {
     buffer.get_text(&start, &end, true)
 }
 
-pub fn open_file(
-    editor: &Buffer,
-    headerbar: &HeaderBar,
-    current_file: &RwLock<Option<ActiveMetadata>>,
-) {
+pub fn open_file(editor: &Buffer, current_file: &RwLock<Option<ActiveMetadata>>) {
     // Ha létezik, használjuk fel a jelenlegi fájl szülő könyvtárát az OpenDialog
     // kiindulópontjaként.
     let open_dialog = OpenDialog::new({
@@ -54,10 +38,9 @@ pub fn open_file(
             let _ = file.read_to_string(&mut contents);
 
             // Frissítsük a címet, mivel új fájlt töltöttünk be.
-            set_title(&headerbar, &new_file, false);
+            let mut subtitle = String::new();
             if let Some(parent) = new_file.parent() {
-                let subtitle: &str = &parent.to_string_lossy();
-                headerbar.set_subtitle(subtitle);
+                subtitle = String::from(parent.to_str().unwrap());
             }
 
             // Frissítsük a jelenlegi fájl változóját.
@@ -73,7 +56,6 @@ pub fn open_file(
 pub fn close_file(
     window: &Window,
     editor: &Buffer,
-    headerbar: &HeaderBar,
     save_item: &MenuItem,
     current_file: &RwLock<Option<ActiveMetadata>>,
 ) {
@@ -91,13 +73,12 @@ pub fn close_file(
     if unsaved_changes {
         let response = ask_about_unsaved_changes(window);
         if response == ResponseType::Yes.into() {
-            save(&editor, &headerbar, &save_item, &current_file, false);
+            save(&editor, &save_item, &current_file, false);
         }
     }
 
-    &headerbar.set_title("Rozsda IDE");
-    &headerbar.set_subtitle("");
     *current_file.write().unwrap() = None;
+
     editor.delete(&mut editor.get_start_iter(), &mut editor.get_end_iter());
 }
 
@@ -118,4 +99,14 @@ pub fn ask_about_unsaved_changes(parent: &Window) -> i32 {
     dialog.close();
 
     result
+}
+
+pub fn open_project(current_project: &RwLock<Option<ProjectMetadata>>) {
+    let open_dialog = OpenFolderDialog::new(None);
+
+    if let Some(new_project) = open_dialog.run() {
+        if new_project.is_dir() {
+            *current_project.write().unwrap() = Some(ProjectMetadata::new(new_project));
+        }
+    }
 }
