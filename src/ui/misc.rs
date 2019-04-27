@@ -194,12 +194,14 @@ pub fn perform_cargo_action(
 
             if stdout.len() > 0 {
                 output.push_str(&stdout);
-                output.push_str("\n");
+
+                if stderr.len() > 0 {
+                    output.push_str("\n");
+                }
             }
 
             if stderr.len() > 0 {
                 output.push_str(&stderr);
-                output.push_str("\n");
             }
         } else {
             output = format!("{:?}", result)
