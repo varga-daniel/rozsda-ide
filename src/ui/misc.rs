@@ -8,6 +8,7 @@ use sourceview::*;
 
 use std::fs::File;
 use std::io::Read;
+use std::str;
 use std::sync::RwLock;
 
 /// Visszaadja egy szövegbuffer teljes belsejét.
@@ -184,14 +185,34 @@ pub fn perform_cargo_action(
             CargoAction::Clean => result = clean_cargo_project(current_project.get_path()),
             CargoAction::Test => result = test_cargo_project(current_project.get_path()),
         }
+
+        let mut output = String::new();
+
+        if let Ok(result) = result {
+            let stdout = str::from_utf8(&result.stdout).unwrap_or("");
+            let stderr = str::from_utf8(&result.stderr).unwrap_or("");
+
+            if stdout.len() > 0 {
+                output.push_str(&stdout);
+                output.push_str("\n");
+            }
+
+            if stderr.len() > 0 {
+                output.push_str(&stderr);
+                output.push_str("\n");
+            }
+        } else {
+            output = format!("{:?}", result)
+        };
+
         let dialog = MessageDialog::new(
             Some(parent),
             DialogFlags::MODAL,
             MessageType::Info,
             ButtonsType::Ok,
             &format!(
-                "A Cargo parancs a következővel tért vissza:\n\n{:?}",
-                result
+                "A Cargo parancs a következővel tért vissza:\n\n{}",
+                output
             ),
         );
 
