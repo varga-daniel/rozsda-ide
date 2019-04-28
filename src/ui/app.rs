@@ -70,6 +70,7 @@ impl App {
         // A teljes képernyősséget viszont egyszerűen csak egy bool-ként tároljuk.
         let fullscreen = Arc::new(AtomicBool::new(false));
 
+        let new_file = &self.header.file_menu.new_file_item;
         let save = &self.header.file_menu.save_item;
         let save_as = &self.header.file_menu.save_as_item;
         let close = &self.header.file_menu.close_file_item;
@@ -79,6 +80,7 @@ impl App {
         self.open_event();
         self.save_event(&save, &save, false);
         self.save_event(&save, &save_as, true);
+        self.close_file_event(&save, &new_file);
         self.close_file_event(&save, &close);
         self.close_file_event(&save, &quit);
 
@@ -136,6 +138,14 @@ impl App {
                     }
                     // Fájl bezárása Ctrl+W-val.
                     key if key == 'w' as u32
+                        && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
+                    {
+                        close_file(&window, &editor, &save_item, &current_file);
+                        header.update_titles(true);
+                    }
+
+                    // Fájl bezárása Ctrl+N-nel is. Egyelőre a bezárás és az "új" az ugyanaz.
+                    key if key == 'n' as u32
                         && eventkey.get_state().contains(ModifierType::CONTROL_MASK) =>
                     {
                         close_file(&window, &editor, &save_item, &current_file);
